@@ -19,9 +19,8 @@
 
 function cashRegister(price, cash, cid) {
   const totalCash = cid.reduce((acc, curr) => {
-    console.log(curr[1]);
     return acc + curr[1];
-  }, 0);
+  }, 0).toFixed(2)
 
   if (cash < price) {
     return { status: "INCORRECT_PAYMENT", change: [] };
