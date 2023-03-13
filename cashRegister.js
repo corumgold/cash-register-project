@@ -17,19 +17,71 @@
 // Otherwise, return { status: "OPEN", change: [...] }, with the change due in coins and bills, as the value of the change key.
 // Only include the value of a currency unit if its value is not zero. (i.e.do NOT display["NICKEL", 0])
 
-function cashRegister(price, cash, cid) {
-  const totalCash = cid.reduce((acc, curr) => {
-    return acc + curr[1];
-  }, 0).toFixed(2)
+function checkCashRegister(price, cash, cid) {
+  let change = cash - price;
+  console.log("change: " + change);
 
-  if (cash < price) {
-    return { status: "INCORRECT_PAYMENT", change: [] };
+  const currencyVal = {
+    "ONE HUNDRED": 100,
+    TWENTY: 20,
+    TEN: 10,
+    FIVE: 5,
+    ONE: 1,
+    QUARTER: 0.25,
+    DIME: 0.1,
+    NICKEL: 0.05,
+    PENNY: 0.01,
+  };
+
+  const cidSum = cid.reduce((acc, val) => {
+    if (!isNaN(acc + val[1])) {
+      return acc + val[1];
+    }
+  }, 0);
+
+  const revCid = cid.reverse();
+  let changeObj = {};
+
+  function calculateChange() {
+    for (let unit in currencyVal) {
+      // loop through each Currency Unit
+      revCid.forEach((amount) => {
+        // loop through each amount
+        if (amount[1] >= currencyVal[unit] && amount[0] === unit) {
+          // check what I have in cash-in-drawer
+          while (change - currencyVal[unit] >= 0 && amount[1]) {
+            // calculate the change and convert it into an object
+            console.log(unit, currencyVal[unit]);
+            if (
+              Object.keys(changeObj).length === 0 &&
+              changeObj.constructor === Object
+            ) {
+              changeObj[unit] = currencyVal[unit];
+            } else {
+              if (changeObj.hasOwnProperty(unit)) {
+                changeObj[unit] += currencyVal[unit];
+              }
+              if (!changeObj.hasOwnProperty(unit)) {
+                changeObj[unit] = currencyVal[unit];
+              }
+            }
+
+            change -= currencyVal[unit];
+            amount[1] -= currencyVal[unit];
+          }
+        }
+      });
+    }
+
+    let changeArr = Object.entries(changeObj); // convert changeObj into an Array
+    return changeArr;
   }
 
-  if (totalCash < cash - price) {
+  if (change < 0 || change > cidSum) {
     return { status: "INSUFFICIENT_FUNDS", change: [] };
+  } else {
+    return { status: "OPEN", change: calculateChange() };
   }
-
 }
 
 // EXAMPLE INVOCATION, so you can `console.log` the outputs
